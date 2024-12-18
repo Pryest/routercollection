@@ -4,6 +4,23 @@ from transformers import AutoModel
 from transformers import AutoModelForCausalLM
 
 
+class CalibrationLinear(torch.nn.Module):
+    def __init__(self, hidden_size):
+        super(CalibrationLinear, self).__init__()
+        self.wik = torch.nn.Linear(hidden_size, 2, dtype=torch.float32)
+        self.wik.weight.data.fill_(0)
+    
+    def forward(self, hidden_states):
+        return self.wik(hidden_states)
+    
+    def save(self, path):
+        os.makedirs(path, exist_ok=True)
+        torch.save(self.wik.state_dict(), os.path.join(path, "wik.pt"))
+    
+    def load(self, path):
+        self.wik.load_state_dict(torch.load(os.path.join(path, "wik.pt")))
+
+
 class CalibrationEncoder(torch.nn.Module):
     def __init__(self, load_from):
         super(CalibrationEncoder, self).__init__()
